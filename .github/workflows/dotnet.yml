@@ -15,6 +15,7 @@ jobs:
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
       DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet
+      DOTNET_WORKLOAD_CACHE_DIR: ${{ github.workspace }}/.dotnet/packs
 
     steps:
     - uses: actions/checkout@v4
@@ -22,10 +23,10 @@ jobs:
     - uses: actions/cache@v4
       id: dotnet-cache
       with:
-        key: ${{ runner.os }}-dotnet-${{ hashFiles('./global.json') }}
-        path: ${{ env.DOTNET_INSTALL_DIR }}
+        key: ${{ runner.os }}-dotnet-maui-desktop-workload-${{ hashFiles('./global.json') }}
+        path: ${{ env.DOTNET_WORKLOAD_CACHE_DIR }}
         restore-keys: |
-          ${{ runner.os }}-dotnet-${{ hashFiles('./global.json') }}
+          ${{ runner.os }}-dotnet-maui-desktop-workload-${{ hashFiles('./global.json') }}
 
     - uses: actions/setup-dotnet@v4
       with:
@@ -35,14 +36,14 @@ jobs:
 
     - name: "List dotnet cache directory"
       run: |
-        if (Test-Path -Path ${{ env.DOTNET_INSTALL_DIR }}) {
-          ls ${{ env.DOTNET_INSTALL_DIR }}
+        if (Test-Path -Path ${{ env.DOTNET_WORKLOAD_CACHE_DIR }}) {
+          ls ${{ env.DOTNET_WORKLOAD_CACHE_DIR }}
         } else {
-          echo "Directory '${{ env.DOTNET_INSTALL_DIR }}' does not exist"
+          echo "Directory '${{ env.DOTNET_WORKLOAD_CACHE_DIR }}' does not exist"
         }    
       shell: pwsh
         
-    - run: dotnet workload install maui
+    - run: dotnet workload install maui-desktop
       if: steps.dotnet-cache.outputs.cache-hit != 'true'
     
     - run: dotnet workload restore ./github-actions-maui-app.sln

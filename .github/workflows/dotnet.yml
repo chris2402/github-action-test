@@ -24,6 +24,9 @@ jobs:
         cache-dependency-path: '**/packages.lock.json'
 
     - run: ls ${{ env.NUGET_PACKAGES }}
+
+    - name: Restore workload dependencies
+      run: dotnet workload restore --locked-mode
     
     - name: Restore dependencies
       run: dotnet restore --locked-mode

@@ -1,0 +1,39 @@
+name: 'Setup MAUI Desktop Workloads'
+description: 'Installs MAUI workload and caches it'
+inputs:
+  SOLUTION:  # path to the solution file
+    description: 'Path to the solution file'
+    required: true
+  DOTNET_ROOT:  # root folder of .NET SDK
+    description: 'Root folder of .NET SDK'
+    required: false
+    default: ${{ runner.env.DOTNET_ROOT }}
+  GLOBAL_JSON:  # path to the global.json file
+    description: 'Path to the global.json file'
+    required: false
+    default: ${{ runner.workspace }}/global.json
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/cache@v4
+      id: dotnet-cache
+      env: 
+        KEY: dotnet-workload-maui-desktop-${{ runner.os }}-${{ hashFiles(inputs.GLOBAL_JSON) }}
+      with:
+        key: ${{ env.KEY }}
+        path: |
+          ${{ inputs.DOTNET_ROOT }}/packs
+          ${{ inputs.DOTNET_ROOT }}/sdk-manifests
+          ${{ inputs.DOTNET_ROOT }}/library-packs
+          ${{ inputs.DOTNET_ROOT }}/metadata
+        restore-keys: |
+          ${{ env.KEY }}
+
+    - run: dotnet workload install maui-desktop
+      if: steps.dotnet-cache.outputs.cache-hit != 'true'
+      shell: bash
+
+    - run: dotnet workload restore ${{ inputs.SOLUTION }}
+      if: steps.dotnet-cache.outputs.cache-hit == 'true'
+      shell: bash

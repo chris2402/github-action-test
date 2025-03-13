@@ -484,4 +484,4 @@ $RECYCLE.BIN/
 *.swp
 
 
-!/Chris2402.App
+!/*.App/

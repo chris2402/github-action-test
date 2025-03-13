@@ -14,16 +14,18 @@ jobs:
     runs-on: windows-latest
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet
 
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        global-json-file: './global.json'
         cache: true
         cache-dependency-path: '**/packages.lock.json'
 
-    - run: |
+    - name: "List cache directory"
+      run: |
         if (Test-Path -Path ${{ env.NUGET_PACKAGES }}) {
           ls ${{ env.NUGET_PACKAGES }}
         } else {
@@ -31,13 +33,13 @@ jobs:
         }    
       shell: pwsh
 
-    - name: Restore workload dependencies
-      run: dotnet workload restore --locked-mode .\github-actions-maui-app.sln
+    - run: dotnet workload install maui
     
     - name: Restore dependencies
       run: dotnet restore --locked-mode
       
-    - run: |
+    - name: "List cache directory"
+      run: |
         if (Test-Path -Path ${{ env.NUGET_PACKAGES }}) {
           ls ${{ env.NUGET_PACKAGES }}
         } else {

@@ -15,7 +15,6 @@ jobs:
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
       DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet
-      DOTNET_WORKLOAD_CACHE_DIR: ${{ github.workspace }}/.dotnet/packs
 
     steps:
     - uses: actions/checkout@v4
@@ -24,7 +23,12 @@ jobs:
       id: dotnet-cache
       with:
         key: ${{ runner.os }}-dotnet-maui-desktop-workload-${{ hashFiles('./global.json') }}
-        path: ${{ env.DOTNET_WORKLOAD_CACHE_DIR }}
+        path: |
+          ${{ github.workspace }}/.dotnet/packs
+          ${{ github.workspace }}/.dotnet/sdk-manifests
+          ${{ github.workspace }}/.dotnet/library-packs
+          ${{ github.workspace }}/.dotnet/metadata
+          
         restore-keys: |
           ${{ runner.os }}-dotnet-maui-desktop-workload-${{ hashFiles('./global.json') }}
 
@@ -34,15 +38,6 @@ jobs:
         cache: true
         cache-dependency-path: '**/packages.lock.json'
 
-    - name: "List dotnet cache directory"
-      run: |
-        if (Test-Path -Path ${{ env.DOTNET_WORKLOAD_CACHE_DIR }}) {
-          ls ${{ env.DOTNET_WORKLOAD_CACHE_DIR }}
-        } else {
-          echo "Directory '${{ env.DOTNET_WORKLOAD_CACHE_DIR }}' does not exist"
-        }    
-      shell: pwsh
-        
     - run: dotnet workload install maui-desktop
       if: steps.dotnet-cache.outputs.cache-hit != 'true'
     
@@ -51,15 +46,6 @@ jobs:
 
     - run: dotnet restore --locked-mode
       
-    - name: "List dotnet cache directory"
-      run: |
-        if (Test-Path -Path ${{ env.DOTNET_INSTALL_DIR }}) {
-          ls ${{ env.DOTNET_INSTALL_DIR }}
-        } else {
-          echo "Directory '${{ env.DOTNET_INSTALL_DIR }}' does not exist"
-        }    
-      shell: pwsh
-
     # - name: Build
     #   run: dotnet build --no-restore
     # - name: Test

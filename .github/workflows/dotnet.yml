@@ -1,7 +1,7 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET
+name: Build MAUI Desktop App
 
 on:
   push:
@@ -29,31 +29,40 @@ jobs:
       uses: ./.github/actions/setup-maui
       with:
         SOLUTION: './github-actions-maui-app.sln'
-        DOTNET_ROOT: ${{ env.DOTNET_ROOT }}
         GLOBAL_JSON: './global.json'
-    
-    # - uses: actions/cache@v4
-    #   id: dotnet-cache
-    #   with:
-    #     key: ${{ runner.os }}-dotnet-maui-desktop-workload-${{ hashFiles('./global.json') }}
-    #     path: |
-    #       ${{ env.DOTNET_ROOT }}/packs
-    #       ${{ env.DOTNET_ROOT }}/sdk-manifests
-    #       ${{ env.DOTNET_ROOT }}/library-packs
-    #       ${{ env.DOTNET_ROOT }}/metadata
-          
-    #     restore-keys: |
-    #       ${{ runner.os }}-dotnet-maui-desktop-workload-${{ hashFiles('./global.json') }}
-
-    # - run: dotnet workload install maui-desktop
-    #   if: steps.dotnet-cache.outputs.cache-hit != 'true'
-    
-    # - run: dotnet workload restore ./github-actions-maui-app.sln
-    #   if: steps.dotnet-cache.outputs.cache-hit == 'true'
 
     - run: dotnet restore --locked-mode
       
-    # - name: Build
-    #   run: dotnet build --no-restore
-    # - name: Test
-    #   run: dotnet test --no-build --verbosity normal
+    - name: Publish application 
+      run: dotnet publish .\Maui.App\ -f net8.0-windows10.0.19041.0 -c Release -bl -o ./app_bin --no-restore
+    
+    - name: Upload App as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ runner.os }}-app--${{ github.head_ref }}--${{ github.sha }}
+        path: ./app_bin
+        if-no-files-found: error
+        retention-days: 1
+        overwrite: true
+
+  test-ui:
+    runs-on: windows-latest
+    needs: build
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: './global.json'
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
+
+    - name: Download App Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ runner.os }}-app--${{ github.head_ref }}--${{ github.sha }}
+
+    - name: Run UI Tests
+      run: |
+        echo "Running UI Tests"
+        echo "App Path: ${{ github.workspace }}/app_bin"

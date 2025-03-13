@@ -23,7 +23,13 @@ jobs:
         cache: true
         cache-dependency-path: '**/packages.lock.json'
 
-    - run: ls ${{ env.NUGET_PACKAGES }}
+    - run: |
+        if (Test-Path -Path ${{ env.NUGET_PACKAGES }}) {
+          ls ${{ env.NUGET_PACKAGES }}
+        } else {
+          echo "Directory '${{ env.NUGET_PACKAGES }}' does not exist"
+        }    
+      shell: pwsh
 
     - name: Restore workload dependencies
       run: dotnet workload restore --locked-mode
@@ -31,7 +37,13 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore --locked-mode
       
-    - run: ls ${{ env.NUGET_PACKAGES }}
+    - run: |
+        if (Test-Path -Path ${{ env.NUGET_PACKAGES }}) {
+          ls ${{ env.NUGET_PACKAGES }}
+        } else {
+          echo "Directory '${{ env.NUGET_PACKAGES }}' does not exist"
+        }    
+      shell: pwsh
     # - name: Build
     #   run: dotnet build --no-restore
     # - name: Test

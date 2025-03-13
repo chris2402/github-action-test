@@ -18,34 +18,47 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    
+    - uses: actions/cache@v4
+      id: dotnet-cache
+      with:
+        key: ${{ runner.os }}-dotnet-${{ hashFiles('./global.json') }}
+        path: ${{ env.DOTNET_INSTALL_DIR }}
+        restore-keys: |
+          ${{ runner.os }}-dotnet-${{ hashFiles('./global.json') }}
+
     - uses: actions/setup-dotnet@v4
       with:
         global-json-file: './global.json'
         cache: true
         cache-dependency-path: '**/packages.lock.json'
 
-    - name: "List cache directory"
+    - name: "List dotnet cache directory"
       run: |
-        if (Test-Path -Path ${{ env.NUGET_PACKAGES }}) {
-          ls ${{ env.NUGET_PACKAGES }}
+        if (Test-Path -Path ${{ env.DOTNET_INSTALL_DIR }}) {
+          ls ${{ env.DOTNET_INSTALL_DIR }}
         } else {
-          echo "Directory '${{ env.NUGET_PACKAGES }}' does not exist"
+          echo "Directory '${{ env.DOTNET_INSTALL_DIR }}' does not exist"
+        }    
+      shell: pwsh
+        
+    - run: dotnet workload install maui
+      if: steps.dotnet-cache.outputs.cache-hit != 'true'
+    
+    - run: dotnet workload restore ./github-actions-maui-app.sln
+      if: steps.dotnet-cache.outputs.cache-hit == 'true'
+
+    - run: dotnet restore --locked-mode
+      
+    - name: "List dotnet cache directory"
+      run: |
+        if (Test-Path -Path ${{ env.DOTNET_INSTALL_DIR }}) {
+          ls ${{ env.DOTNET_INSTALL_DIR }}
+        } else {
+          echo "Directory '${{ env.DOTNET_INSTALL_DIR }}' does not exist"
         }    
       shell: pwsh
 
-    - run: dotnet workload install maui
-    
-    - name: Restore dependencies
-      run: dotnet restore --locked-mode
-      
-    - name: "List cache directory"
-      run: |
-        if (Test-Path -Path ${{ env.NUGET_PACKAGES }}) {
-          ls ${{ env.NUGET_PACKAGES }}
-        } else {
-          echo "Directory '${{ env.NUGET_PACKAGES }}' does not exist"
-        }    
-      shell: pwsh
     # - name: Build
     #   run: dotnet build --no-restore
     # - name: Test

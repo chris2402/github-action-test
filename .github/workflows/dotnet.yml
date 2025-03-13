@@ -32,7 +32,7 @@ jobs:
       shell: pwsh
 
     - name: Restore workload dependencies
-      run: dotnet workload restore --locked-mode
+      run: dotnet workload restore --locked-mode .\github-actions-maui-app.sln
     
     - name: Restore dependencies
       run: dotnet restore --locked-mode

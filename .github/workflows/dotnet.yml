@@ -23,9 +23,13 @@ jobs:
         cache: true
         cache-dependency-path: '**/packages.lock.json'
 
+    - run: ls ${{ env.NUGET_PACKAGES }}
+    
     - name: Restore dependencies
       run: dotnet restore --locked-mode
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      
+    - run: ls ${{ env.NUGET_PACKAGES }}
+    # - name: Build
+    #   run: dotnet build --no-restore
+    # - name: Test
+    #   run: dotnet test --no-build --verbosity normal

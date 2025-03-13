@@ -19,6 +19,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: './global.json'
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
+
     - uses: actions/cache@v4
       id: dotnet-cache
       with:
@@ -31,12 +37,6 @@ jobs:
           
         restore-keys: |
           ${{ runner.os }}-dotnet-maui-desktop-workload-${{ hashFiles('./global.json') }}
-
-    - uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: './global.json'
-        cache: true
-        cache-dependency-path: '**/packages.lock.json'
 
     - run: dotnet workload install maui-desktop
       if: steps.dotnet-cache.outputs.cache-hit != 'true'

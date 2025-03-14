@@ -16,4 +16,5 @@ jobs:
       with:
         global-json-file: './global.json'
     - run: dotnet tool restore
-    - run: dotnet csharpier .
+    - run: dotnet csharpier --check .
+    - run: dotnet format --verify-no-changes

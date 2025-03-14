@@ -1,0 +1,16 @@
+name: 'Setup MAUI Desktop Workloads'
+description: 'Checks format of code'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: './global.json'
+    - run: dotnet tool restore
+      shell: bash
+    - run: dotnet csharpier --check .
+      shell: bash
+    - run: dotnet format --verify-no-changes --no-restore # Should cache and restore nugets for 3.party analysers
+      shell: bash

@@ -19,43 +19,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # verify:
-  #   uses: ./.github/workflows/verify.yml 
+  verify:
+    uses: ./.github/workflows/verify.yml 
     
-  # build:
-  #   runs-on: windows-latest
+  build:
+    runs-on: windows-latest
 
-  #   steps:
-  #   - uses: actions/checkout@v4
+    steps:
+    - uses: actions/checkout@v4
     
-  #   - uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: './global.json'
-  #       cache: true
-  #       cache-dependency-path: '**/packages.lock.json'
+    - uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: './global.json'
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
 
-  #   - name: Setup .NET MAUI
-  #     uses: ./.github/actions/setup-maui
-  #     with:
-  #       SOLUTION: './github-actions-maui-app.sln'
-  #       GLOBAL_JSON: './global.json'
+    - name: Setup .NET MAUI
+      uses: ./.github/actions/setup-maui
+      with:
+        SOLUTION: './github-actions-maui-app.sln'
+        GLOBAL_JSON: './global.json'
 
-  #   - run: dotnet restore --locked-mode
+    - run: dotnet restore --locked-mode
       
-  #   - name: Publish application 
-  #     run: dotnet publish .\Maui.App\ -f net8.0-windows10.0.19041.0 -c Release -bl:app_bin/publish.binlog -o ./app_bin
+    - name: Publish application 
+      run: dotnet publish .\Maui.App\ -f net8.0-windows10.0.19041.0 -c Release -bl:app_bin/publish.binlog -o ./app_bin
     
-  #   - name: Upload App as Artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       path: ./app_bin
-  #       if-no-files-found: error
-  #       retention-days: 2
-  #       overwrite: true
+    - name: Upload App as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        path: ./app_bin
+        if-no-files-found: error
+        retention-days: 2
+        overwrite: true
 
   test-ui:
     runs-on: windows-latest
-    # needs: build
+    needs: build
     steps:
     - uses: actions/checkout@v4
 

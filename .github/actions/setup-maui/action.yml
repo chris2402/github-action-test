@@ -20,14 +20,13 @@ runs:
       id: dotnet-cache
       env: 
         KEY: dotnet-workload-maui-desktop-${{ runner.os }}-${{ hashFiles(inputs.GLOBAL_JSON) }}
-        DOTNET_ROOT: ${{ inputs.DOTNET_ROOT || env.DOTNET_ROOT }}
       with:
         key: ${{ env.KEY }}
         path: |
-          ${{ env.DOTNET_ROOT }}/packs
-          ${{ env.DOTNET_ROOT }}/sdk-manifests
-          ${{ env.DOTNET_ROOT }}/library-packs
-          ${{ env.DOTNET_ROOT }}/metadata
+          ${{ inputs.DOTNET_ROOT }}/packs
+          ${{ inputs.DOTNET_ROOT }}/sdk-manifests
+          ${{ inputs.DOTNET_ROOT }}/library-packs
+          ${{ inputs.DOTNET_ROOT }}/metadata
         restore-keys: |
           ${{ env.KEY }}
 

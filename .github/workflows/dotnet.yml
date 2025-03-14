@@ -71,7 +71,6 @@ jobs:
         node-version-file: ./.node-version
         
     - run: |
-        npm ci
         npm install -g appium@$(node -p "require('./package.json').dependencies['appium']")
         appium driver install windows
 

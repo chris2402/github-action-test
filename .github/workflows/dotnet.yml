@@ -12,6 +12,7 @@ on:
 env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages   # 'actions/setup-dotnet' to cache packages
   DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet       # 'actions/setup-dotnet' to cache .NET SDK
+  APPIUM_HOME: ${{ github.workspace }}/.appium    
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -70,29 +71,29 @@ jobs:
         cache-dependency-path: ./package-lock.json
         node-version-file: ./package.json
     
-    ## TODO: Make custom action to install and cache appium
-    - run: npm install -g appium@$(node -p "require('./package.json').devDependencies['appium']")
-    
     - name: Cache Appium installation
       id: cache-appium
       uses: actions/cache@v4
-      env:
-        APPIUM_HOME: ${{ runner.os == 'Windows' && env.USERPROFILE || env.HOME }}/.appium    
       with:
         path: ${{ env.APPIUM_HOME }}
         key: appium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
         restore-keys: |
           appium-${{ runner.os }}-
-    
+
+    ## TODO: Make custom action to install and cache appium
+    - run: npm install -g appium@$(node -p "require('./package.json').devDependencies['appium']")
+        
     - run: appium driver install --source npm appium-windows-driver@$(node -p "require('./package.json').devDependencies['appium-windows-driver']")
       if: ${{ steps.cache-appium.outputs.cache-hit != 'true' }}
 
     - run: echo $env:APPIUM_HOME
       shell: pwsh
+    
+    - run: ls ${{ env.APPIUM_HOME }}
 
     - run: echo $(get-command appium).Source
       shell: pwsh
-      
+            
     # - name: Download App Artifact
     #   uses: actions/download-artifact@v4
 

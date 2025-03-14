@@ -69,10 +69,24 @@ jobs:
         cache: npm
         cache-dependency-path: ./package-lock.json
         node-version-file: ./package.json
-        
-    - run: npm install -g appium@$(node -p "require('./package.json').devDependencies['appium']")
-    - run: appium driver install --source npm appium-windows-driver@$(node -p "require('./package.json').devDependencies['appium-windows-driver']")
     
+    ## TODO: Make custom action to install and cache appium
+    - run: npm install -g appium@$(node -p "require('./package.json').devDependencies['appium']")
+    
+    - name: Cache Appium installation
+      id: cache-appium
+      uses: actions/cache@v4
+      env:
+        APPIUM_HOME: ${{ runner.os == 'Windows' && env.USERPROFILE || env.HOME }}/.appium    
+      with:
+        path: ${{ env.APPIUM_HOME }}
+        key: appium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          appium-${{ runner.os }}-
+    
+    - run: appium driver install --source npm appium-windows-driver@$(node -p "require('./package.json').devDependencies['appium-windows-driver']")
+      if: ${{ steps.cache-appium.outputs.cache-hit != 'true' }}
+
     - run: echo $env:APPIUM_HOME
       shell: pwsh
 

@@ -37,7 +37,7 @@ jobs:
     - run: dotnet restore --locked-mode
       
     - name: Publish application 
-      run: dotnet publish .\Maui.App\ -f net8.0-windows10.0.19041.0 -c Release -bl -o ./app_bin --no-restore
+      run: dotnet publish .\Maui.App\ -f net8.0-windows10.0.19041.0 -c Release -bl -o ./app_bin
     
     - name: Upload App as Artifact
       uses: actions/upload-artifact@v4

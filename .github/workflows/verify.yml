@@ -1,4 +1,4 @@
-name: Code Verification
+name: Code format verification
 
 on:
   workflow_call: 

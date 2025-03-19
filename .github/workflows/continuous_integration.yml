@@ -1,0 +1,61 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages   # 'actions/setup-dotnet' to cache packages
+  DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet       # 'actions/setup-dotnet' to cache .NET SDK
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify-code-format:
+    name: 'Code format verification'
+    runs-on: ubuntu-latest
+    steps:    
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: './global.json'
+      - run: >
+          dotnet tool restore
+          dotnet csharpier --check .
+          dotnet format --verify-no-changes --no-restore # Should cache and restore nugets for 3.party analysers
+    
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: './global.json'
+      
+    - name: Build application 
+      run: dotnet build . --artifacts-path artifacts
+    
+    - name: Upload App as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        path: ./artifacts
+        retention-days: 1
+
+  test:
+    runs-on: windows-latest
+    needs: build
+    environment: [ development ]
+    steps:    
+    - name: Download App Artifact
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+
+    - run: .\artifacts\bin\My.Application\debug\My.Application.exe

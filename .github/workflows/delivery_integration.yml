@@ -1,0 +1,37 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Continuous Delivery
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet       # 'actions/setup-dotnet' to cache .NET SDK
+
+
+jobs:
+  deploy-test:
+    name: Deploy to Test
+    runs-on: ubuntu-latest
+    environment: 
+      name: Test
+      url: ${{ steps.build-artifact.outputs.artifact_url }}
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: './global.json'
+
+    - name: Build application 
+      run: dotnet build . --artifacts-path artifacts
+
+    - name: Upload App as Artifact
+      uses: actions/upload-artifact@v4
+      id: build-artifact
+      with:
+        path: ./artifacts
+        retention-days: 1

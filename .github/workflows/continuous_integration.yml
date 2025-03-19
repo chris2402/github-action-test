@@ -27,12 +27,13 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: './global.json'
-      - run: >
+      - run: |
           dotnet tool restore
           dotnet csharpier --check .
           dotnet format --verify-no-changes --no-restore # Should cache and restore nugets for 3.party analysers
     
   build:
+    name: Build Application
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' }}
     steps:
@@ -52,6 +53,7 @@ jobs:
         retention-days: 1
 
   test:
+    name: Test Application
     runs-on: ubuntu-latest
     needs: build
     if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}

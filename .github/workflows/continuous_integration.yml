@@ -6,8 +6,6 @@ name: Continuous Integration
 on:
   pull_request:
     branches: [ "main" ]
-  pull_request_review: 
-    types: [submitted, edited]
 
 env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages   # 'actions/setup-dotnet' to cache packages
@@ -56,7 +54,7 @@ jobs:
     name: Test Application
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
+    if: ${{ github.event.pull_request.review_comments }}
     steps:    
     - name: Download App Artifact
       uses: actions/download-artifact@v4

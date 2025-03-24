@@ -1,37 +1,69 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: Continuous Delivery
+name: Continous Deployment
 
 on:
   push:
-    branches: [ "main" ]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
-env:
-  DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet       # 'actions/setup-dotnet' to cache .NET SDK
-
+concurrency:
+  group: "connect-touch-app-deployment"
+  cancel-in-progress: true
 
 jobs:
-  deploy-test:
-    name: Deploy to Test
+  validate-version:
+    name: "Validate version"
     runs-on: ubuntu-latest
-    environment: 
-      name: Test
-      url: ${{ steps.build-artifact.outputs.artifact_url }}
-    
     steps:
-    - uses: actions/checkout@v4
+      - id: previous-version
+        shell: pwsh
+        run: |
+          $latestVersion = git tag --no-contains HEAD --sort=-refname |? {$_ -match '^v(\d+\.)?(\d+\.)?(\*|\d+)$' } | select -First 1
+          if ($latestVersion) 
+          {
+              [version]$value = $latestVersion -replace '^v'
+              Write-Host "Latest version tag found: $value"
+              echo "value=${value}" >> "$GITHUB_OUTPUT"
+          }
+          else
+          {
+              Write-Host "No version tag found."
+              echo "value=" >> $env:GITHUB_OUTPUT
+          }
+      
+      - name: 'Verify higher version'
+        shell: pwsh
+        if: ${{ steps.previous-version.outputs.value != '' }}
+        run: |
+          [version]$current = "${{ steps.previous-version.outputs.value }}" -replace '^v'
+          [version]$next = "${{ github.ref_name }}" -replace '^v'
+          if ($next -le $current) {
+            Write-Error "Next version ($next) must be greater than current version ($current)."
+            exit 1
+          }
+          
+  create-artifacts:
+    name: "Create Connect Touch App Artifacts"
+    runs-on: windows-latest
+    needs: validate-version
+    steps:
+      - id: get-version
+        run: |
+          [version]$current = = "${{ github.ref_name }}" -replace '^v'
+          Write-Host "Current version: $current"
+          echo "app_version=${current}" >> "$GITHUB_OUTPUT"
+        
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: './global.json'
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: './global.json'
 
-    - name: Build application 
-      run: dotnet build . --artifacts-path artifacts
+      - name: Build application 
+        run: dotnet build . --artifacts-path artifacts
 
-    - name: Upload App as Artifact
-      uses: actions/upload-artifact@v4
-      id: build-artifact
-      with:
-        path: ./artifacts
-        retention-days: 1
+      - name: Upload App as Artifact
+        uses: actions/upload-artifact@v4
+        id: build-artifact
+        with:
+          path: ./artifacts
+          retention-days: 1

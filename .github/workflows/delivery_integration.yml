@@ -14,6 +14,10 @@ jobs:
     name: "Validate version"
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - id: previous-version
         shell: pwsh
         run: |
@@ -48,7 +52,7 @@ jobs:
     steps:
       - id: get-version
         run: |
-          [version]$current = = "${{ github.ref_name }}" -replace '^v'
+          [version]$current = "${{ github.ref_name }}" -replace '^v'
           Write-Host "Current version: $current"
           echo "app_version=${current}" >> "$GITHUB_OUTPUT"
         

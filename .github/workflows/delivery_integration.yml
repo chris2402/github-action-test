@@ -49,6 +49,8 @@ jobs:
     name: "Create Connect Touch App Artifacts"
     runs-on: windows-latest
     needs: validate-version
+    permissions:
+      contents: write
     steps:
       - id: get-version
         run: |

@@ -69,5 +69,19 @@ jobs:
         uses: actions/upload-artifact@v4
         id: build-artifact
         with:
+          name: Test Release
           path: ./artifacts
           retention-days: 1
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: Test Release
+          name: "Test Release ${{ github.ref_name }}"
+          tag: ${{ github.ref_name }}
+          allowUpdates: true
+          draft: true
+          prerelease: false
+          omitDraftDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true

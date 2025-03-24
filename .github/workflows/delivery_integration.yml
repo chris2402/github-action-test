@@ -80,7 +80,7 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: ./artifacts/bin/My.Application/release/My.Application.exe
+          artifacts: ./artifacts/bin/My.Application/**/My.*.exe
           tag: ${{ github.ref_name }}
           allowUpdates: true
           draft: true

@@ -34,6 +34,8 @@ jobs:
               echo "value=" >> $env:GITHUB_OUTPUT
           }
       
+      - run: echo ${{ steps.previous-version.outputs.value }}
+
       - name: 'Verify higher version'
         shell: pwsh
         if: ${{ steps.previous-version.outputs.value != '' }}
@@ -78,7 +80,6 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: Test Release
-          name: "Test Release ${{ github.ref_name }}"
           tag: ${{ github.ref_name }}
           allowUpdates: true
           draft: true
